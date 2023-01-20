@@ -439,6 +439,18 @@ module "vpc_creation" {
       subnet_private_access = true
     }
   ]
+ secondary_ranges = {
+    "${local.spark_subnet_nm}" = [
+      {
+        range_name    = "gke-${local.location}-${local.project_id}-pods-1"
+        ip_cidr_range = "10.168.128.0/17"
+      },
+      {
+        range_name    = "gke-${local.location}-${local.project_id}-services-1"
+        ip_cidr_range = "10.169.0.0/22"
+      },
+    ]
+  }
   depends_on = [
     time_sleep.sleep_after_identities_permissions
   ]
@@ -756,7 +768,7 @@ Create Docker Container image for Serverless Spark
 resource "null_resource" "custom_container_image_creation" {
   provisioner "local-exec" {
     interpreter = ["bash", "-exc"]
-    command     = "source /root/google-cloud-sdk/path.bash.inc; chmod +x ${path.module}/scripts-hydrated/build-container-image.sh; ${path.module}/scripts-hydrated/build-container-image.sh ${local.SPARK_CONTAINER_IMG_TAG} ${local.bq_connector_jar_gcs_uri} ${local.location}"
+    command     = "chmod +x ${path.module}/scripts-hydrated/build-container-image.sh; ${path.module}/scripts-hydrated/build-container-image.sh ${local.SPARK_CONTAINER_IMG_TAG} ${local.bq_connector_jar_gcs_uri} ${local.location}"
   
   }
   triggers = {
